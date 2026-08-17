@@ -22,13 +22,14 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    width: 100%;
 }
 
-/* เอฟเฟกต์ Fade-in สำหรับอิโมจิ */
+/* จัดให้อยู่กลางจออย่างสมบูรณ์ */
 .emoji {
     font-size: 8rem;
     opacity: 0;
-    transition: opacity 2s ease, transform 0.5s ease;
+    transition: opacity 1.5s ease, transform 0.5s ease;
     user-select: none;
 }
 
@@ -40,48 +41,68 @@ body {
     opacity: 0;
 }
 
-/* ข้อความสยองขวัญ */
-.message-text {
-    font-size: 2.5rem;
-    color: #fff;
-    text-shadow: 0 0 10px #ff0000;
-    margin-top: 20px;
-    display: none;
+.text-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-/* ปุ่ม Try Again สี่เหลี่ยมขอบมน */
-.retry-btn {
-    display: none;
-    margin-top: 30px;
-    padding: 15px 40px;
+.message-text {
+    font-size: 2.2rem;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    margin-bottom: 25px;
+    white-space: pre-line;
+}
+
+/* ปุ่มสี่เหลี่ยมผืนผ้า ขอบกลม (Pill shape) */
+.button-group {
+    display: flex;
+    gap: 20px;
+}
+
+.btn {
+    padding: 12px 40px;
     font-size: 1.2rem;
     font-weight: bold;
     color: #fff;
+    border-radius: 25px; /* ขอบกลม */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.btn-choice {
+    background-color: transparent;
+    border: 2px solid #fff;
+}
+
+.btn-choice:hover {
+    background-color: #fff;
+    color: #000;
+}
+
+.btn-action {
     background-color: #8b0000;
     border: 2px solid #ff0000;
-    border-radius: 25px; /* ขอบมน */
-    cursor: pointer;
     box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
-    transition: opacity 1.5s ease, transform 0.2s;
-    opacity: 0;
 }
 
-.retry-btn.visible {
-    display: inline-block;
-    opacity: 1;
-}
-
-.retry-btn:hover {
-    transform: scale(1.05);
+.btn-action:hover {
     background-color: #ff0000;
+    transform: scale(1.05);
 }
 
-/* เอฟเฟกต์หน้าจอสีแดง */
+/* สภาพแวดล้อมตอนสั่นและหน้าจอแดง */
 body.red-screen {
     background-color: #ff0000 !important;
 }
 
-/* เอฟเฟกต์สั่นแรงมาก (Shake Animation) */
+body.red-screen .message-text {
+    text-shadow: 0 0 10px #ff0000;
+}
+
 .shake-screen {
     animation: intense-shake 0.05s infinite;
 }

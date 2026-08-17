@@ -1,78 +1,96 @@
-// รายการสินค้าตัวอย่าง
-const products = [
-    { id: 1, name: "หูฟังไร้สาย Gaming", price: 1290, image: "https://via.placeholder.com/250x180?text=Headset" },
-    { id: 2, name: "คีย์บอร์ด Mechanical", price: 2490, image: "https://via.placeholder.com/250x180?text=Keyboard" },
-    { id: 3, name: "เมาส์ไร้สาย Ergonomic", price: 890, image: "https://via.placeholder.com/250x180?text=Mouse" },
-    { id: 4, name: "แผ่นรองเมาส์ RGB", price: 450, image: "https://via.placeholder.com/250x180?text=Mousepad" }
-];
-
-let cart = [];
-
-// โหลดรายการสินค้าแสดงบนหน้าเว็บ
-function renderProducts() {
-    const container = document.getElementById("product-list");
-    container.innerHTML = "";
-    
-    products.forEach(product => {
-        const card = document.createElement("div");
-        card.className = "product-card";
-        card.innerHTML = `
-            <img src="${product.image}" alt="${product.name}" class="product-image">
-            <h4 class="product-title">${product.name}</h4>
-            <div class="product-price">฿${product.price.toLocaleString()}</div>
-            <button class="btn-add" onclick="addToCart(${product.id})">เพิ่มลงตะกร้า</button>
-        `;
-        container.appendChild(card);
-    });
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-// เพิ่มสินค้าลงตะกร้า
-function addToCart(productId) {
-    const product = products.find(p => p.id === productId);
-    cart.push(product);
-    updateCartUI();
+body {
+    background-color: #000;
+    color: #fff;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+    transition: background-color 0.3s ease;
 }
 
-// อัปเดต UI ของตะกร้าสินค้า
-function updateCartUI() {
-    document.getElementById("cart-count").innerText = cart.length;
-    
-    const cartItemsContainer = document.getElementById("cart-items");
-    cartItemsContainer.innerHTML = "";
-    
-    let total = 0;
-    cart.forEach((item, index) => {
-        total += item.price;
-        const itemEl = document.createElement("div");
-        itemEl.className = "cart-item";
-        itemEl.innerHTML = `
-            <span>${item.name}</span>
-            <span>฿${item.price.toLocaleString()}</span>
-        `;
-        cartItemsContainer.appendChild(itemEl);
-    });
-    
-    document.getElementById("total-price").innerText = total.toLocaleString();
+.main-container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-// เปิด-ปิด Modal ตะกร้าสินค้า
-function toggleCart() {
-    const modal = document.getElementById("cart-modal");
-    modal.style.display = modal.style.display === "flex" ? "none" : "flex";
+/* เอฟเฟกต์ Fade-in สำหรับอิโมจิ */
+.emoji {
+    font-size: 8rem;
+    opacity: 0;
+    transition: opacity 2s ease, transform 0.5s ease;
+    user-select: none;
 }
 
-// ปุ่มชำระเงินตัวอย่าง
-function checkout() {
-    if (cart.length === 0) {
-        alert("ตะกร้าสินค้าของคุณยังว่างอยู่");
-        return;
-    }
-    alert("ขอบคุณสำหรับการสั่งซื้อ! (ระบบจำลอง)");
-    cart = [];
-    updateCartUI();
-    toggleCart();
+.emoji.fade-in {
+    opacity: 1;
 }
 
-// เรียกทำงานเมื่อโหลดหน้าเว็บ
-document.addEventListener("DOMContentLoaded", renderProducts);
+.emoji.fade-out {
+    opacity: 0;
+}
 
+/* ข้อความสยองขวัญ */
+.message-text {
+    font-size: 2.5rem;
+    color: #fff;
+    text-shadow: 0 0 10px #ff0000;
+    margin-top: 20px;
+    display: none;
+}
+
+/* ปุ่ม Try Again สี่เหลี่ยมขอบมน */
+.retry-btn {
+    display: none;
+    margin-top: 30px;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    background-color: #8b0000;
+    border: 2px solid #ff0000;
+    border-radius: 25px; /* ขอบมน */
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+    transition: opacity 1.5s ease, transform 0.2s;
+    opacity: 0;
+}
+
+.retry-btn.visible {
+    display: inline-block;
+    opacity: 1;
+}
+
+.retry-btn:hover {
+    transform: scale(1.05);
+    background-color: #ff0000;
+}
+
+/* เอฟเฟกต์หน้าจอสีแดง */
+body.red-screen {
+    background-color: #ff0000 !important;
+}
+
+/* เอฟเฟกต์สั่นแรงมาก (Shake Animation) */
+.shake-screen {
+    animation: intense-shake 0.05s infinite;
+}
+
+@keyframes intense-shake {
+    0% { transform: translate(0, 0) rotate(0deg); }
+    20% { transform: translate(-15px, 15px) rotate(-3deg); }
+    40% { transform: translate(15px, -15px) rotate(3deg); }
+    60% { transform: translate(-20px, -10px) rotate(-5deg); }
+    80% { transform: translate(20px, 10px) rotate(5deg); }
+    100% { transform: translate(0, 0) rotate(0deg); }
+}

@@ -2,113 +2,230 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    background-color: #050505;
-    color: #e0e0e0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Courier New', Courier, monospace;
-    overflow: hidden;
+    background-color: #0f172a;
+    color: #f8fafc;
+    min-height: 100vh;
 }
 
-.main-container {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 90%;
-    max-width: 600px;
+/* Navbar Style */
+header {
+    background-color: #1e293b;
+    border-bottom: 1px solid #334155;
+    padding: 1rem 2rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
 }
 
-/* เอฟเฟกต์ค่อยๆ แสดงข้อความแบบลึกลับ */
-.fade-text {
+.nav-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
     font-size: 1.8rem;
-    color: #fff;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
-    margin-bottom: 30px;
-    opacity: 0;
-    transition: opacity 1.5s ease;
-    white-space: pre-line;
-    line-height: 1.5;
+    font-weight: 800;
+    cursor: pointer;
+    color: #38bdf8;
 }
 
-.fade-text.show {
-    opacity: 1;
+.logo span {
+    color: #f43f5e;
 }
 
-/* ปุ่มสี่เหลี่ยมผืนผ้า ขอบมน */
-.button-group {
+.user-profile-bar {
     display: flex;
-    gap: 20px;
-    opacity: 0;
-    transition: opacity 1s ease;
+    align-items: center;
+    gap: 10px;
+    background-color: #334155;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
-.button-group.show {
-    opacity: 1;
+.user-profile-bar:hover {
+    background-color: #475569;
 }
 
-.btn {
-    padding: 12px 35px;
+.user-profile-bar img {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+}
+
+/* Main Container & Sections */
+.main-container {
+    max-width: 1000px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+/* Mode Buttons */
+.mode-selector {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 2rem;
+}
+
+.mode-btn {
+    background-color: #1e293b;
+    color: #94a3b8;
+    border: 2px solid #334155;
+    padding: 12px 24px;
+    border-radius: 12px;
     font-size: 1.1rem;
     font-weight: bold;
-    color: #e0e0e0;
-    background-color: transparent;
-    border: 1px solid #555;
-    border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s ease;
-    outline: none;
 }
 
-.btn-choice:hover {
-    background-color: #fff;
-    color: #000;
-    border-color: #fff;
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+.mode-btn.active {
+    background-color: #38bdf8;
+    color: #0f172a;
+    border-color: #38bdf8;
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
 }
 
-.btn-secondary {
-    padding: 10px 20px;
+/* Leaderboard Card & Table */
+.leaderboard-card, .profile-card {
+    background-color: #1e293b;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.board-header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.board-subtitle {
+    color: #94a3b8;
     font-size: 0.9rem;
+    margin-top: 5px;
 }
 
-.btn-action {
-    margin-top: 20px;
-    border-color: #888;
+.table-container {
+    overflow-x: auto;
 }
 
-.btn-action:hover {
-    background-color: #eee;
-    color: #000;
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
 }
 
-/* โซนแสดงกล้อง */
-.camera-box {
+th, td {
+    padding: 14px 18px;
+    border-bottom: 1px solid #334155;
+}
+
+th {
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.user-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-cell img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+}
+
+.rank-badge {
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.score-badge {
+    color: #38bdf8;
+    font-weight: 800;
+    font-size: 1.1rem;
+}
+
+/* Profile Settings */
+.profile-card {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.profile-info {
+    text-align: center;
+    margin: 1.5rem 0;
+}
+
+.profile-info img {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+    border: 3px solid #38bdf8;
+}
+
+.divider {
+    border: 0;
+    height: 1px;
+    background: #334155;
+    margin: 1.5rem 0;
+}
+
+.setting-group {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    width: 100%;
+    gap: 8px;
+    margin-bottom: 1.5rem;
 }
 
-video {
-    width: 100%;
-    max-width: 400px;
-    height: 300px;
-    object-fit: cover;
-    border-radius: 12px;
-    border: 1px solid #333;
-    background-color: #000;
+select {
+    background-color: #0f172a;
+    color: #fff;
+    border: 1px solid #334155;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 1rem;
 }
 
-.camera-controls {
-    display: flex;
-    gap: 15px;
+.score-summary {
+    background-color: #0f172a;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.btn-back {
+    width: 100%;
+    background-color: #334155;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-back:hover {
+    background-color: #475569;
 }

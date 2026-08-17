@@ -9,22 +9,27 @@
 <body>
 
     <div class="main-container">
-        <!-- อิโมจิอยู่กลางจอ -->
-        <div id="emoji" class="emoji">😀</div>
+        <!-- พื้นที่แสดงคำถาม / ข้อความ -->
+        <h1 id="question-text" class="fade-text"></h1>
 
-        <!-- โซนคำถาม/ข้อความเตือน -->
-        <div id="text-container" class="text-container">
-            <h1 id="message-text" class="message-text"></h1>
-            
-            <!-- ปุ่มตัวเลือกคำถาม Yes/No -->
-            <div id="question-buttons" class="button-group" style="display: none;">
-                <button class="btn btn-choice" onclick="answerQuestion(true)">Yes</button>
-                <button class="btn btn-choice" onclick="answerQuestion(false)">No</button>
+        <!-- ส่วนของกล้อง (คำถามที่ 3) -->
+        <div id="camera-container" class="camera-box" style="display: none;">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="canvas" style="display: none;"></canvas>
+            <div class="camera-controls">
+                <button id="switch-btn" class="btn btn-secondary" onclick="switchCamera()">🔄 Switch</button>
+                <button id="capture-btn" class="btn btn-choice" onclick="takePicture()">📷 Capture</button>
             </div>
-
-            <!-- ปุ่ม Return / Try Again -->
-            <button id="action-btn" class="btn btn-action" style="display: none;" onclick="resetAndStart()">Return</button>
         </div>
+
+        <!-- ปุ่มตัวเลือก Yes / No -->
+        <div id="choice-buttons" class="button-group" style="display: none;">
+            <button class="btn btn-choice" onclick="handleAnswer(true)">Yes</button>
+            <button class="btn btn-choice" onclick="handleAnswer(false)">No</button>
+        </div>
+
+        <!-- ปุ่มสำหรับการรีเซ็ต / จบเกม -->
+        <button id="action-btn" class="btn btn-action" style="display: none;"></button>
     </div>
 
     <script src="script.js"></script>

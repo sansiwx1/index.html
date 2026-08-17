@@ -1,200 +1,137 @@
-const questionText = document.getElementById('question-text');
-const choiceButtons = document.getElementById('choice-buttons');
-const actionBtn = document.getElementById('action-btn');
-const cameraContainer = document.getElementById('camera-container');
-const webcam = document.getElementById('webcam');
+// ข้อมูลผู้ใช้จำลองเริ่มต้นสำหรับ Leaderboard
+let currentMode = 'rich'; // 'rich' หรือ 'beauty'
+let currentUser = {
+    name: "Guest User",
+    email: "",
+    avatar: "https://via.placeholder.com/100",
+    flag: "🇹🇭",
+    richScore: 88,
+    beautyScore: 92,
+    isLoggedIn: false
+};
 
-let currentStep = 1;
-let detectedCountry = "Thailand";
-let detectedDevice = "computer";
-let userEmail = "sun@gmail.com"; // ดึงข้อมูลบัญชีผู้ใช้
-let mediaStream = null;
-let currentFacingMode = "user"; // กล้องหน้าเป็นค่าเริ่มต้น
+// ฐานข้อมูล mock up ของอันดับแข่งขัน
+const mockLeaderboardData = {
+    rich: [
+        { name: "Elon Musk", avatar: "https://i.pravatar.cc/150?img=12", flag: "🇺🇸", score: 99 },
+        { name: "Alexandre A.", avatar: "https://i.pravatar.cc/150?img=33", flag: "🇫🇷", score: 96 },
+        { name: "Satoshi N.", avatar: "https://i.pravatar.cc/150?img=60", flag: "🇯🇵", score: 94 },
+        { name: "Somchai Pro", avatar: "https://i.pravatar.cc/150?img=11", flag: "🇹🇭", score: 85 }
+    ],
+    beauty: [
+        { name: "K-Pop Idol", avatar: "https://i.pravatar.cc/150?img=5", flag: "🇰🇷", score: 98 },
+        { name: "Model Maya", avatar: "https://i.pravatar.cc/150?img=9", flag: "🇬🇧", score: 95 },
+        { name: "Kenji Vance", avatar: "https://i.pravatar.cc/150?img=68", flag: "🇯🇵", score: 91 },
+        { name: "Narisara", avatar: "https://i.pravatar.cc/150?img=20", flag: "🇹🇭", score: 89 }
+    ]
+};
 
 window.addEventListener('DOMContentLoaded', () => {
-    initDetections();
-    startExperience();
+    renderLeaderboard();
 });
 
-// ตรวจจับประเทศและอุปกรณ์อัตโนมัติโดยไม่ต้องขออนุญาต
-function initDetections() {
-    // 1. ตรวจจับประเทศจาก Timezone / ภาษาเครื่อง
-    try {
-        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        if (timeZone.includes("Bangkok") || navigator.language.includes("th")) {
-            detectedCountry = "Thailand";
-        } else {
-            detectedCountry = timeZone.split('/')[1] || "your country";
-        }
-    } catch (e) {
-        detectedCountry = "Thailand";
+// ฟังก์ชั่นสลับหน้าความแข่งขัน (รวย / หล่อสวย)
+function switchMode(mode) {
+    currentMode = mode;
+    document.getElementById('btn-mode-rich').classList.toggle('active', mode === 'rich');
+    document.getElementById('btn-mode-beauty').classList.toggle('active', mode === 'beauty');
+    
+    document.getElementById('board-title').innerText = mode === 'rich' 
+        ? '🏆 อันดับความรวยสูงสุด' 
+        : '✨ อันดับความหล่อสวยสูงสุด';
+        
+    renderLeaderboard();
+}
+
+// ประมวลผลและแสดงรายการ Leaderboard
+function renderLeaderboard() {
+    const listContainer = document.getElementById('leaderboard-list');
+    listContainer.innerHTML = '';
+
+    // รวมข้อมูล User ปัจจุบันเข้าไปคำนวณอันดับด้วย (หากล็อกอินอยู่)
+    let currentData = [...mockLeaderboardData[currentMode]];
+    
+    if (currentUser.isLoggedIn) {
+        currentData.push({
+            name: currentUser.name,
+            avatar: currentUser.avatar,
+            flag: currentUser.flag,
+            score: currentMode === 'rich' ? currentUser.richScore : currentUser.beautyScore,
+            isSelf: true
+        });
     }
 
-    // 2. ตรวจจับชนิดอุปกรณ์
-    const ua = navigator.userAgent;
-    if (/Mobi|Android|iPhone/i.test(ua)) {
-        detectedDevice = "phone";
-    } else if (/iPad|Tablet/i.test(ua)) {
-        detectedDevice = "tablet";
-    } else {
-        detectedDevice = "computer";
-    }
-}
+    // เรียงลำดับคะแนนจากมากไปน้อย
+    currentData.sort((a, b) => b.score - a.score);
 
-function startExperience() {
-    stopCamera();
-    currentStep = 1;
-    
-    // รีเซ็ต UI
-    questionText.classList.remove('show');
-    choiceButtons.classList.remove('show');
-    choiceButtons.style.display = 'none';
-    actionBtn.style.display = 'none';
-    cameraContainer.style.display = 'none';
+    // สร้าง Element ตาราง
+    currentData.forEach((item, index) => {
+        const tr = document.createElement('tr');
+        if (item.isSelf) tr.style.backgroundColor = 'rgba(56, 189, 248, 0.1)';
 
-    setTimeout(() => {
-        showQuestion1();
-    }, 500);
-}
-
-// ------------------- คำถามที่ 1 -------------------
-function showQuestion1() {
-    currentStep = 1;
-    setQuestionText(`Are you located in ${detectedCountry}?`);
-    showChoices();
-}
-
-// ------------------- คำถามที่ 2 -------------------
-function showQuestion2() {
-    currentStep = 2;
-    setQuestionText(`Are you currently browsing the web in ${detectedDevice} mode?`);
-    showChoices();
-}
-
-// ------------------- คำถามที่ 3 -------------------
-function showQuestion3() {
-    currentStep = 3;
-    hideChoices();
-    setQuestionText("Take a picture of your face and show it to me.");
-    
-    setTimeout(() => {
-        cameraContainer.style.display = 'flex';
-        openCamera(currentFacingMode);
-    }, 1000);
-}
-
-function openCamera(facingMode) {
-    stopCamera();
-    navigator.mediaDevices.getUserMedia({
-        video: { facingMode: facingMode }
-    }).then(stream => {
-        mediaStream = stream;
-        webcam.srcObject = stream;
-    }).catch(err => {
-        alert("Unable to access camera.");
+        tr.innerHTML = `
+            <td class="rank-badge">${index === 0 ? '🥇 1' : index === 1 ? '🥈 2' : index === 2 ? '🥉 3' : index + 1}</td>
+            <td class="user-cell">
+                <img src="${item.avatar}" alt="${item.name}">
+                <span>${item.name} ${item.isSelf ? '(คุณ)' : ''}</span>
+            </td>
+            <td style="font-size: 1.3rem;">${item.flag}</td>
+            <td class="score-badge">${item.score} / 100</td>
+        `;
+        listContainer.appendChild(tr);
     });
 }
 
-function switchCamera() {
-    currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
-    openCamera(currentFacingMode);
-}
+// ฟังก์ชั่นจัดการเมื่อล็อกอินด้วย Google Login สำเร็จ
+function handleCredentialResponse(response) {
+    // ถอดรหัส JWT Token ของ Google เพื่อเอาข้อมูลโปรไฟล์
+    const responsePayload = parseJwt(response.credential);
 
-function takePicture() {
-    stopCamera();
-    cameraContainer.style.display = 'none';
+    currentUser.name = responsePayload.name;
+    currentUser.email = responsePayload.email;
+    currentUser.avatar = responsePayload.picture;
+    currentUser.isLoggedIn = true;
+
+    // สุ่มคะแนนประมวลผลให้ผู้ใช้ (0-100)
+    currentUser.richScore = Math.floor(Math.random() * 20) + 80;
+    currentUser.beautyScore = Math.floor(Math.random() * 20) + 80;
+
+    // อัปเดต UI หน้าเว็บ
+    document.getElementById('google-btn').style.display = 'none';
+    document.getElementById('user-profile-bar').style.display = 'flex';
+    document.getElementById('nav-user-avatar').src = currentUser.avatar;
+    document.getElementById('nav-user-name').innerText = currentUser.name;
     
-    // แสดงคำว่า Beautiful
-    setQuestionText("Beautiful");
+    // อัปเดตข้อมูลในหน้า Settings
+    document.getElementById('setting-avatar').src = currentUser.avatar;
+    document.getElementById('setting-name').innerText = currentUser.name;
+    document.getElementById('setting-email').innerText = currentUser.email;
+    document.getElementById('user-rich-score').innerText = currentUser.richScore;
+    document.getElementById('user-beauty-score').innerText = currentUser.beautyScore;
 
-    setTimeout(() => {
-        showQuestion4();
-    }, 2500);
+    renderLeaderboard();
 }
 
-function stopCamera() {
-    if (mediaStream) {
-        mediaStream.getTracks().forEach(track => track.stop());
-        mediaStream = null;
-    }
+// แปลงสิทธิ์ Token JWT จาก Google
+function parseJwt(token) {
+    let base64Url = token.split('.')[1];
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    let jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
 }
 
-// ------------------- คำถามที่ 4 -------------------
-function showQuestion4() {
-    currentStep = 4;
-    setQuestionText(`Is this the email address you are currently using?\n\n${userEmail}`);
-    showChoices();
+// เปลี่ยนธงชาติ
+function updateCountryFlag() {
+    const select = document.getElementById('country-select');
+    currentUser.flag = select.value;
+    document.getElementById('nav-user-flag').innerText = currentUser.flag;
+    renderLeaderboard();
 }
 
-// ------------------- ระบบจัดการคำตอบ -------------------
-function handleAnswer(isYes) {
-    hideChoices();
-
-    let isCorrect = false;
-
-    if (currentStep === 1 && isYes) isCorrect = true;
-    else if (currentStep === 2 && isYes) isCorrect = true;
-    else if (currentStep === 4 && isYes) isCorrect = true;
-
-    if (isCorrect) {
-        if (currentStep === 1) {
-            fadeOutText(() => showQuestion2());
-        } else if (currentStep === 2) {
-            fadeOutText(() => showQuestion3());
-        } else if (currentStep === 4) {
-            fadeOutText(() => showWinScreen());
-        }
-    } else {
-        fadeOutText(() => triggerGameOver());
-    }
-}
-
-// แสดงหน้า Game Over (โทนลึกลับ เรียบง่าย)
-function triggerGameOver() {
-    setQuestionText("Game Over");
-    
-    setTimeout(() => {
-        actionBtn.innerText = "Try Again";
-        actionBtn.style.display = 'inline-block';
-        actionBtn.onclick = startExperience;
-    }, 1000);
-}
-
-// แสดงหน้า Win
-function showWinScreen() {
-    setQuestionText("Game End\nYou Win!");
-    
-    setTimeout(() => {
-        actionBtn.innerText = "Return";
-        actionBtn.style.display = 'inline-block';
-        actionBtn.onclick = startExperience;
-    }, 1000);
-}
-
-// ------------------- Helper Functions -------------------
-function setQuestionText(text) {
-    questionText.classList.remove('show');
-    setTimeout(() => {
-        questionText.innerText = text;
-        questionText.classList.add('show');
-    }, 500);
-}
-
-function fadeOutText(callback) {
-    questionText.classList.remove('show');
-    setTimeout(callback, 800);
-}
-
-function showChoices() {
-    setTimeout(() => {
-        choiceButtons.style.display = 'flex';
-        setTimeout(() => choiceButtons.classList.add('show'), 50);
-    }, 1000);
-}
-
-function hideChoices() {
-    choiceButtons.classList.remove('show');
-    setTimeout(() => {
-        choiceButtons.style.display = 'none';
-    }, 500);
+// สลับการแสดงผลระหว่างหน้า Leaderboard และ Settings
+function showSection(sectionId) {
+    document.querySelectorAll('.content-section').forEach(sec => sec.classList.remove('active'));
+    document.getElementById(sectionId).classList.add('active');
 }

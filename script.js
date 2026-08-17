@@ -1,166 +1,200 @@
-const emojiEl = document.getElementById('emoji');
-const messageText = document.getElementById('message-text');
-const questionButtons = document.getElementById('question-buttons');
+const questionText = document.getElementById('question-text');
+const choiceButtons = document.getElementById('choice-buttons');
 const actionBtn = document.getElementById('action-btn');
+const cameraContainer = document.getElementById('camera-container');
+const webcam = document.getElementById('webcam');
 
-let detectedCountry = "Thailand"; // ค่าเริ่มต้นสำหรับกรณีดึงชื่อประเทศสำเร็จ
-let isLocationVerified = false;
-let timeouts = []; // ใช้เก็บ Timeout ทั้งหมดเพื่อล้างค่าตอน Reset ป้องกันบั๊กกดซ้ำ
+let currentStep = 1;
+let detectedCountry = "Thailand";
+let detectedDevice = "computer";
+let userEmail = "sun@gmail.com"; // ดึงข้อมูลบัญชีผู้ใช้
+let mediaStream = null;
+let currentFacingMode = "user"; // กล้องหน้าเป็นค่าเริ่มต้น
 
 window.addEventListener('DOMContentLoaded', () => {
-    resetAndStart();
+    initDetections();
+    startExperience();
 });
 
-// ฟังก์ชั่นสำหรับเคลียร์ Timeout ทั้งหมดเพื่อป้องกันบั๊ก
-function clearAllTimeouts() {
-    timeouts.forEach(t => clearTimeout(t));
-    timeouts = [];
-}
-
-function safeTimeout(fn, delay) {
-    const t = setTimeout(fn, delay);
-    timeouts.push(t);
-    return t;
-}
-
-function resetAndStart() {
-    clearAllTimeouts();
-
-    // ล้างสถานะ UI ทั้งหมด
-    document.body.className = '';
-    messageText.innerText = '';
-    messageText.style.display = 'none';
-    questionButtons.style.display = 'none';
-    actionBtn.style.display = 'none';
-
-    emojiEl.innerText = '😀';
-    emojiEl.style.display = 'block';
-    emojiEl.className = 'emoji';
-
-    // 1. ค่อยๆ ปรากฏอิโมจิขึ้นมากลางจอ
-    safeTimeout(() => {
-        emojiEl.classList.add('fade-in');
-
-        // 2. ขออนุญาตเปิดกล้องและขออนุญาตตำแหน่งพร้อมกัน
-        safeTimeout(() => {
-            requestPermissions();
-        }, 1500);
-    }, 300);
-}
-
-function requestPermissions() {
-    let cameraGranted = false;
-    let locationGranted = false;
-
-    // ขอสิทธิ์กล้องของเบราว์เซอร์
-    const cameraPromise = navigator.mediaDevices.getUserMedia({ video: true })
-        .then(() => { cameraGranted = true; })
-        .catch(() => { cameraGranted = false; });
-
-    // ขอสิทธิ์ตำแหน่งของเบราว์เซอร์
-    const locationPromise = new Promise((resolve) => {
-        if (!navigator.geolocation) {
-            resolve(false);
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                locationGranted = true;
-                // ดึงชื่อประเทศจากภาษาของระบบเบราว์เซอร์ (สามารถปรับแต่งเพิ่มเติมได้)
-                const userLang = navigator.language || navigator.userLanguage;
-                if (userLang.includes('th')) detectedCountry = "Thailand";
-                else detectedCountry = "your location";
-                
-                resolve(true);
-            },
-            () => {
-                locationGranted = false;
-                resolve(false);
-            }
-        );
-    });
-
-    // รอให้ผู้ใช้ตอบรับทั้งสอง popup จากระบบ
-    Promise.all([cameraPromise, locationPromise]).then(() => {
-        if (cameraGranted && locationGranted) {
-            handleSuccessPermission();
+// ตรวจจับประเทศและอุปกรณ์อัตโนมัติโดยไม่ต้องขออนุญาต
+function initDetections() {
+    // 1. ตรวจจับประเทศจาก Timezone / ภาษาเครื่อง
+    try {
+        const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        if (timeZone.includes("Bangkok") || navigator.language.includes("th")) {
+            detectedCountry = "Thailand";
         } else {
-            handleDeniedPermission();
+            detectedCountry = timeZone.split('/')[1] || "your country";
         }
-    });
-}
+    } catch (e) {
+        detectedCountry = "Thailand";
+    }
 
-// กรณีอนุญาตทั้งกล้องและตำแหน่ง
-function handleSuccessPermission() {
-    emojiEl.innerText = '😁';
-    isLocationVerified = true;
-
-    // อิโมจิยิ้มแป๊บนึง แล้วค่อยๆ หายไป
-    safeTimeout(() => {
-        emojiEl.classList.remove('fade-in');
-        emojiEl.classList.add('fade-out');
-
-        safeTimeout(() => {
-            emojiEl.style.display = 'none';
-            showQuestion();
-        }, 1500);
-    }, 1500);
-}
-
-// ค่อยๆ มีคำถามโผล่ขึ้นมา
-function showQuestion() {
-    messageText.innerText = `Are you located in ${detectedCountry}?`;
-    messageText.style.display = 'block';
-    questionButtons.style.display = 'flex';
-}
-
-// ตอบคำถาม Yes/No
-function answerQuestion(isYes) {
-    questionButtons.style.display = 'none';
-
-    if (isYes && isLocationVerified) {
-        // หากกด Yes และระบบตรวจเจอว่าอยู่จริง
-        messageText.innerText = "Game End\nYou Win!";
-        actionBtn.innerText = "Return";
-        actionBtn.className = "btn btn-choice";
-        actionBtn.style.display = 'inline-block';
+    // 2. ตรวจจับชนิดอุปกรณ์
+    const ua = navigator.userAgent;
+    if (/Mobi|Android|iPhone/i.test(ua)) {
+        detectedDevice = "phone";
+    } else if (/iPad|Tablet/i.test(ua)) {
+        detectedDevice = "tablet";
     } else {
-        // หากตอบ No หรือระบบไม่พบการยืนยันตัวตน ให้ตัดไปหน้าสั่น
-        triggerScareSequence();
+        detectedDevice = "computer";
     }
 }
 
-// กรณีไม่อนุญาต (กด Deny กล้อง หรือ ตำแหน่ง)
-function handleDeniedPermission() {
-    emojiEl.innerText = '😶';
+function startExperience() {
+    stopCamera();
+    currentStep = 1;
     
-    safeTimeout(() => {
-        emojiEl.classList.remove('fade-in');
-        emojiEl.classList.add('fade-out');
+    // รีเซ็ต UI
+    questionText.classList.remove('show');
+    choiceButtons.classList.remove('show');
+    choiceButtons.style.display = 'none';
+    actionBtn.style.display = 'none';
+    cameraContainer.style.display = 'none';
 
-        safeTimeout(() => {
-            emojiEl.style.display = 'none';
-            triggerScareSequence();
-        }, 1500);
+    setTimeout(() => {
+        showQuestion1();
+    }, 500);
+}
+
+// ------------------- คำถามที่ 1 -------------------
+function showQuestion1() {
+    currentStep = 1;
+    setQuestionText(`Are you located in ${detectedCountry}?`);
+    showChoices();
+}
+
+// ------------------- คำถามที่ 2 -------------------
+function showQuestion2() {
+    currentStep = 2;
+    setQuestionText(`Are you currently browsing the web in ${detectedDevice} mode?`);
+    showChoices();
+}
+
+// ------------------- คำถามที่ 3 -------------------
+function showQuestion3() {
+    currentStep = 3;
+    hideChoices();
+    setQuestionText("Take a picture of your face and show it to me.");
+    
+    setTimeout(() => {
+        cameraContainer.style.display = 'flex';
+        openCamera(currentFacingMode);
     }, 1000);
 }
 
-// เอฟเฟกต์หน้าจอสั่นและจอแดง
-function triggerScareSequence() {
-    document.body.classList.add('shake-screen', 'red-screen');
+function openCamera(facingMode) {
+    stopCamera();
+    navigator.mediaDevices.getUserMedia({
+        video: { facingMode: facingMode }
+    }).then(stream => {
+        mediaStream = stream;
+        webcam.srcObject = stream;
+    }).catch(err => {
+        alert("Unable to access camera.");
+    });
+}
+
+function switchCamera() {
+    currentFacingMode = (currentFacingMode === "user") ? "environment" : "user";
+    openCamera(currentFacingMode);
+}
+
+function takePicture() {
+    stopCamera();
+    cameraContainer.style.display = 'none';
     
-    messageText.innerText = "Why don't you allow it?";
-    messageText.style.display = 'block';
+    // แสดงคำว่า Beautiful
+    setQuestionText("Beautiful");
 
-    safeTimeout(() => {
-        messageText.innerText = "Game over. Try again.";
+    setTimeout(() => {
+        showQuestion4();
+    }, 2500);
+}
 
-        safeTimeout(() => {
-            actionBtn.innerText = "Try Again";
-            actionBtn.className = "btn btn-action";
-            actionBtn.style.display = 'inline-block';
-            actionBtn.onclick = resetAndStart; // ปุ่มสั่งเริ่มใหม่
-        }, 1000);
+function stopCamera() {
+    if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+    }
+}
 
-    }, 2000);
+// ------------------- คำถามที่ 4 -------------------
+function showQuestion4() {
+    currentStep = 4;
+    setQuestionText(`Is this the email address you are currently using?\n\n${userEmail}`);
+    showChoices();
+}
+
+// ------------------- ระบบจัดการคำตอบ -------------------
+function handleAnswer(isYes) {
+    hideChoices();
+
+    let isCorrect = false;
+
+    if (currentStep === 1 && isYes) isCorrect = true;
+    else if (currentStep === 2 && isYes) isCorrect = true;
+    else if (currentStep === 4 && isYes) isCorrect = true;
+
+    if (isCorrect) {
+        if (currentStep === 1) {
+            fadeOutText(() => showQuestion2());
+        } else if (currentStep === 2) {
+            fadeOutText(() => showQuestion3());
+        } else if (currentStep === 4) {
+            fadeOutText(() => showWinScreen());
+        }
+    } else {
+        fadeOutText(() => triggerGameOver());
+    }
+}
+
+// แสดงหน้า Game Over (โทนลึกลับ เรียบง่าย)
+function triggerGameOver() {
+    setQuestionText("Game Over");
+    
+    setTimeout(() => {
+        actionBtn.innerText = "Try Again";
+        actionBtn.style.display = 'inline-block';
+        actionBtn.onclick = startExperience;
+    }, 1000);
+}
+
+// แสดงหน้า Win
+function showWinScreen() {
+    setQuestionText("Game End\nYou Win!");
+    
+    setTimeout(() => {
+        actionBtn.innerText = "Return";
+        actionBtn.style.display = 'inline-block';
+        actionBtn.onclick = startExperience;
+    }, 1000);
+}
+
+// ------------------- Helper Functions -------------------
+function setQuestionText(text) {
+    questionText.classList.remove('show');
+    setTimeout(() => {
+        questionText.innerText = text;
+        questionText.classList.add('show');
+    }, 500);
+}
+
+function fadeOutText(callback) {
+    questionText.classList.remove('show');
+    setTimeout(callback, 800);
+}
+
+function showChoices() {
+    setTimeout(() => {
+        choiceButtons.style.display = 'flex';
+        setTimeout(() => choiceButtons.classList.add('show'), 50);
+    }, 1000);
+}
+
+function hideChoices() {
+    choiceButtons.classList.remove('show');
+    setTimeout(() => {
+        choiceButtons.style.display = 'none';
+    }, 500);
 }

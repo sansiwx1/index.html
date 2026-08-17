@@ -9,14 +9,23 @@
 <body>
 
     <div class="main-container">
-        <div id="emoji" class="emoji fade-in">😀</div>
+        <!-- อิโมจิอยู่กลางจอ -->
+        <div id="emoji" class="emoji">😀</div>
 
-        <h1 id="message-text" class="message-text"></h1>
+        <!-- โซนคำถาม/ข้อความเตือน -->
+        <div id="text-container" class="text-container">
+            <h1 id="message-text" class="message-text"></h1>
+            
+            <!-- ปุ่มตัวเลือกคำถาม Yes/No -->
+            <div id="question-buttons" class="button-group" style="display: none;">
+                <button class="btn btn-choice" onclick="answerQuestion(true)">Yes</button>
+                <button class="btn btn-choice" onclick="answerQuestion(false)">No</button>
+            </div>
 
-        <button id="retry-btn" class="retry-btn" onclick="startExperience()">Try Again</button>
+            <!-- ปุ่ม Return / Try Again -->
+            <button id="action-btn" class="btn btn-action" style="display: none;" onclick="resetAndStart()">Return</button>
+        </div>
     </div>
-
-    <video id="webcam-preview" autoplay playsinline style="display: none;"></video>
 
     <script src="script.js"></script>
 </body>

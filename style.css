@@ -5,15 +5,14 @@
 }
 
 body {
-    background-color: #000;
-    color: #fff;
+    background-color: #050505;
+    color: #e0e0e0;
     height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     font-family: 'Courier New', Courier, monospace;
     overflow: hidden;
-    transition: background-color 0.3s ease;
 }
 
 .main-container {
@@ -22,96 +21,94 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 100%;
+    width: 90%;
+    max-width: 600px;
 }
 
-/* จัดให้อยู่กลางจออย่างสมบูรณ์ */
-.emoji {
-    font-size: 8rem;
+/* เอฟเฟกต์ค่อยๆ แสดงข้อความแบบลึกลับ */
+.fade-text {
+    font-size: 1.8rem;
+    color: #fff;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+    margin-bottom: 30px;
     opacity: 0;
-    transition: opacity 1.5s ease, transform 0.5s ease;
-    user-select: none;
+    transition: opacity 1.5s ease;
+    white-space: pre-line;
+    line-height: 1.5;
 }
 
-.emoji.fade-in {
+.fade-text.show {
     opacity: 1;
 }
 
-.emoji.fade-out {
-    opacity: 0;
-}
-
-.text-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-.message-text {
-    font-size: 2.2rem;
-    color: #fff;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    margin-bottom: 25px;
-    white-space: pre-line;
-}
-
-/* ปุ่มสี่เหลี่ยมผืนผ้า ขอบกลม (Pill shape) */
+/* ปุ่มสี่เหลี่ยมผืนผ้า ขอบมน */
 .button-group {
     display: flex;
     gap: 20px;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.button-group.show {
+    opacity: 1;
 }
 
 .btn {
-    padding: 12px 40px;
-    font-size: 1.2rem;
+    padding: 12px 35px;
+    font-size: 1.1rem;
     font-weight: bold;
-    color: #fff;
-    border-radius: 25px; /* ขอบกลม */
+    color: #e0e0e0;
+    background-color: transparent;
+    border: 1px solid #555;
+    border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s ease;
     outline: none;
 }
 
-.btn-choice {
-    background-color: transparent;
-    border: 2px solid #fff;
-}
-
 .btn-choice:hover {
     background-color: #fff;
     color: #000;
+    border-color: #fff;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+.btn-secondary {
+    padding: 10px 20px;
+    font-size: 0.9rem;
 }
 
 .btn-action {
-    background-color: #8b0000;
-    border: 2px solid #ff0000;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+    margin-top: 20px;
+    border-color: #888;
 }
 
 .btn-action:hover {
-    background-color: #ff0000;
-    transform: scale(1.05);
+    background-color: #eee;
+    color: #000;
 }
 
-/* สภาพแวดล้อมตอนสั่นและหน้าจอแดง */
-body.red-screen {
-    background-color: #ff0000 !important;
+/* โซนแสดงกล้อง */
+.camera-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    width: 100%;
 }
 
-body.red-screen .message-text {
-    text-shadow: 0 0 10px #ff0000;
+video {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 1px solid #333;
+    background-color: #000;
 }
 
-.shake-screen {
-    animation: intense-shake 0.05s infinite;
-}
-
-@keyframes intense-shake {
-    0% { transform: translate(0, 0) rotate(0deg); }
-    20% { transform: translate(-15px, 15px) rotate(-3deg); }
-    40% { transform: translate(15px, -15px) rotate(3deg); }
-    60% { transform: translate(-20px, -10px) rotate(-5deg); }
-    80% { transform: translate(20px, 10px) rotate(5deg); }
-    100% { transform: translate(0, 0) rotate(0deg); }
+.camera-controls {
+    display: flex;
+    gap: 15px;
 }

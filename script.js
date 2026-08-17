@@ -1,96 +1,85 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+const emojiEl = document.getElementById('emoji');
+const messageText = document.getElementById('message-text');
+const retryBtn = document.getElementById('retry-btn');
+const videoEl = document.getElementById('webcam-preview');
+
+// เริ่มการทำงานเมื่อโหลดหน้าเว็บ
+window.addEventListener('DOMContentLoaded', () => {
+    startExperience();
+});
+
+function startExperience() {
+    // รีเซ็ตสถานะหน้าเว็บกลับเป็นเริ่มต้น
+    document.body.className = '';
+    messageText.style.display = 'none';
+    messageText.innerText = '';
+    retryBtn.classList.remove('visible');
+    retryBtn.style.display = 'none';
+    
+    emojiEl.innerText = '😀';
+    emojiEl.className = 'emoji'; // ซ่อนก่อน
+
+    // ค่อยๆ โผล่อิโมจิออกมา
+    setTimeout(() => {
+        emojiEl.classList.add('fade-in');
+        
+        // รออิโมจิแสดงผลเสร็จ แล้วจึงเรียกขออนุญาตเปิดกล้องระบบ (เบราว์เซอร์จริง)
+        setTimeout(() => {
+            requestCameraPermission();
+        }, 2000);
+    }, 500);
 }
 
-body {
-    background-color: #000;
-    color: #fff;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-family: 'Courier New', Courier, monospace;
-    overflow: hidden;
-    transition: background-color 0.3s ease;
+function requestCameraPermission() {
+    // เรียกขอเปิดกล้องผ่านระบบของเบราว์เซอร์ (Google Chrome / System Permission)
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then((stream) => {
+                // กรณีผู้ใช้กด "อนุญาต" (Allow)
+                videoEl.srcObject = stream;
+                emojiEl.innerText = '😁';
+            })
+            .catch((err) => {
+                // กรณีผู้ใช้กด "ไม่อนุญาต" (Block / Deny)
+                handlePermissionDenied();
+            });
+    } else {
+        alert('เบราว์เซอร์ของคุณไม่รองรับการใช้งานกล้อง');
+    }
 }
 
-.main-container {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
+function handlePermissionDenied() {
+    // เปลี่ยนเป็นหน้า 😶 แล้วค่อยๆ หายไป
+    emojiEl.innerText = '😶';
+    
+    setTimeout(() => {
+        emojiEl.classList.remove('fade-in');
+        emojiEl.classList.add('fade-out');
 
-/* เอฟเฟกต์ Fade-in สำหรับอิโมจิ */
-.emoji {
-    font-size: 8rem;
-    opacity: 0;
-    transition: opacity 2s ease, transform 0.5s ease;
-    user-select: none;
-}
+        // หลังจากหายไป เริ่มสั่นแรงมากและเปลี่ยนพื้นหลังเป็นสีแดง
+        setTimeout(() => {
+            emojiEl.style.display = 'none';
+            document.body.classList.add('shake-screen', 'red-screen');
+            
+            // แสดงข้อความ "Why don't you allow it?"
+            messageText.innerText = "Why don't you allow it?";
+            messageText.style.display = 'block';
 
-.emoji.fade-in {
-    opacity: 1;
-}
+            // ผ่านไป 2 วินาที เปลี่ยนเป็น "Game over. Try again."
+            setTimeout(() => {
+                messageText.innerText = "Game over. Try again.";
 
-.emoji.fade-out {
-    opacity: 0;
-}
+                // ค่อยๆ ปรากฏปุ่ม Try Again ขอบมนขึ้นมาในขณะที่จอยังสั่นสีแดงอยู่
+                setTimeout(() => {
+                    retryBtn.style.display = 'inline-block';
+                    setTimeout(() => {
+                        retryBtn.classList.add('visible');
+                    }, 50);
+                }, 1000);
 
-/* ข้อความสยองขวัญ */
-.message-text {
-    font-size: 2.5rem;
-    color: #fff;
-    text-shadow: 0 0 10px #ff0000;
-    margin-top: 20px;
-    display: none;
-}
+            }, 2000);
 
-/* ปุ่ม Try Again สี่เหลี่ยมขอบมน */
-.retry-btn {
-    display: none;
-    margin-top: 30px;
-    padding: 15px 40px;
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #fff;
-    background-color: #8b0000;
-    border: 2px solid #ff0000;
-    border-radius: 25px; /* ขอบมน */
-    cursor: pointer;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
-    transition: opacity 1.5s ease, transform 0.2s;
-    opacity: 0;
-}
+        }, 1500);
 
-.retry-btn.visible {
-    display: inline-block;
-    opacity: 1;
-}
-
-.retry-btn:hover {
-    transform: scale(1.05);
-    background-color: #ff0000;
-}
-
-/* เอฟเฟกต์หน้าจอสีแดง */
-body.red-screen {
-    background-color: #ff0000 !important;
-}
-
-/* เอฟเฟกต์สั่นแรงมาก (Shake Animation) */
-.shake-screen {
-    animation: intense-shake 0.05s infinite;
-}
-
-@keyframes intense-shake {
-    0% { transform: translate(0, 0) rotate(0deg); }
-    20% { transform: translate(-15px, 15px) rotate(-3deg); }
-    40% { transform: translate(15px, -15px) rotate(3deg); }
-    60% { transform: translate(-20px, -10px) rotate(-5deg); }
-    80% { transform: translate(20px, 10px) rotate(5deg); }
-    100% { transform: translate(0, 0) rotate(0deg); }
+    }, 1000);
 }

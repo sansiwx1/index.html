@@ -3,52 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Online Store</title>
+    <title>...</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- Header & Navigation -->
-    <header>
-        <div class="nav-container">
-            <h1 class="logo">MyStore</h1>
-            <div class="cart-icon-wrapper" onclick="toggleCart()">
-                <span>🛒 ตะกร้า</span>
-                <span id="cart-count">0</span>
-            </div>
-        </div>
-    </header>
+    <div class="main-container">
+        <div id="emoji" class="emoji fade-in">😀</div>
 
-    <!-- Banner Section -->
-    <section class="hero">
-        <h2>ยินดีต้อนรับสู่ร้านค้าออนไลน์</h2>
-        <p>เลือกซื้อสินค้าราคาพิเศษ พร้อมจัดส่งทั่วประเทศ</p>
-    </section>
+        <h1 id="message-text" class="message-text"></h1>
 
-    <!-- Product Grid Section -->
-    <main class="container">
-        <h3>สินค้าทั้งหมด</h3>
-        <div class="product-grid" id="product-list">
-            <!-- สินค้าจะถูกโหลดผ่าน JavaScript -->
-        </div>
-    </main>
-
-    <!-- Shopping Cart Modal -->
-    <div class="cart-modal" id="cart-modal">
-        <div class="cart-content">
-            <span class="close-btn" onclick="toggleCart()">&times;</span>
-            <h3>ตะกร้าสินค้าของคุณ</h3>
-            <div id="cart-items"></div>
-            <div class="cart-total">
-                <strong>ราคารวมทั้งหมด: ฿<span id="total-price">0</span></strong>
-            </div>
-            <button class="btn-checkout" onclick="checkout()">ชำระเงิน</button>
-        </div>
+        <button id="retry-btn" class="retry-btn" onclick="startExperience()">Try Again</button>
     </div>
 
-    <footer>
-        <p>&copy; 2026 MyStore. All rights reserved.</p>
-    </footer>
+    <video id="webcam-preview" autoplay playsinline style="display: none;"></video>
 
     <script src="script.js"></script>
 </body>

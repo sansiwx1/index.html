@@ -3,34 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>...</title>
+    <title>SarpMini - Leaderboard & Rating</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Google Identity Services API (สำหรับ Google Login) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
-    <div class="main-container">
-        <!-- พื้นที่แสดงคำถาม / ข้อความ -->
-        <h1 id="question-text" class="fade-text"></h1>
+    <!-- Header & Navigation Bar -->
+    <header>
+        <div class="nav-container">
+            <h1 class="logo" onclick="showSection('leaderboard-section')">Sarp<span>Mini</span></h1>
+            
+            <div class="user-controls">
+                <!-- ปุ่มเข้าสู่ระบบด้วย Google -->
+                <div id="g_id_onload"
+                    data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
+                    data-callback="handleCredentialResponse">
+                </div>
+                <div class="g_id_signin" data-type="standard" id="google-btn"></div>
 
-        <!-- ส่วนของกล้อง (คำถามที่ 3) -->
-        <div id="camera-container" class="camera-box" style="display: none;">
-            <video id="webcam" autoplay playsinline></video>
-            <canvas id="canvas" style="display: none;"></canvas>
-            <div class="camera-controls">
-                <button id="switch-btn" class="btn btn-secondary" onclick="switchCamera()">🔄 Switch</button>
-                <button id="capture-btn" class="btn btn-choice" onclick="takePicture()">📷 Capture</button>
+                <!-- โปรไฟล์เมื่อเข้าสู่ระบบแล้ว -->
+                <div id="user-profile-bar" class="user-profile-bar" style="display: none;" onclick="showSection('profile-section')">
+                    <span id="nav-user-flag">🇹🇭</span>
+                    <img id="nav-user-avatar" src="" alt="Avatar">
+                    <span id="nav-user-name">User Name</span>
+                </div>
             </div>
         </div>
+    </header>
 
-        <!-- ปุ่มตัวเลือก Yes / No -->
-        <div id="choice-buttons" class="button-group" style="display: none;">
-            <button class="btn btn-choice" onclick="handleAnswer(true)">Yes</button>
-            <button class="btn btn-choice" onclick="handleAnswer(false)">No</button>
-        </div>
+    <main class="main-container">
 
-        <!-- ปุ่มสำหรับการรีเซ็ต / จบเกม -->
-        <button id="action-btn" class="btn btn-action" style="display: none;"></button>
-    </div>
+        <!-- ===== 1. หน้ากระดานจัดอันดับ (Leaderboard Section) ===== -->
+        <section id="leaderboard-section" class="content-section active">
+            
+            <!-- สลับโหมดการแข่งขัน -->
+            <div class="mode-selector">
+                <button id="btn-mode-rich" class="mode-btn active" onclick="switchMode('rich')">💎 แข่งความรวย</button>
+                <button id="btn-mode-beauty" class="mode-btn" onclick="switchMode('beauty')">✨ แข่งความหล่อสวย</button>
+            </div>
+
+            <div class="leaderboard-card">
+                <div class="board-header">
+                    <h2 id="board-title">🏆 อันดับความรวยสูงสุด</h2>
+                    <p class="board-subtitle">ประมวลผลคะแนนเต็ม 100 จากระบบวิเคราะห์</p>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>อันดับ</th>
+                                <th>ผู้ใช้งาน</th>
+                                <th>ประเทศ</th>
+                                <th>คะแนน (เต็ม 100)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-list">
+                            <!-- รายการจัดอันดับจะถูกประมวลผลผ่าน JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== 2. หน้าตั้งค่าโปรไฟล์ (Profile Settings Section) ===== -->
+        <section id="profile-section" class="content-section">
+            <div class="profile-card">
+                <h2>⚙️ ตั้งค่าโปรไฟล์ (Profile Settings)</h2>
+                
+                <div class="profile-info">
+                    <img id="setting-avatar" src="https://via.placeholder.com/100" alt="Profile Image">
+                    <h3 id="setting-name">Guest User</h3>
+                    <p id="setting-email">กรุณาเข้าสู่ระบบด้วย Google</p>
+                </div>
+
+                <hr class="divider">
+
+                <div class="setting-group">
+                    <label for="country-select">🌐 เลือกธงชาติประเทศของคุณ:</label>
+                    <select id="country-select" onchange="updateCountryFlag()">
+                        <option value="🇹🇭">🇹🇭 ประเทศไทย (Thailand)</option>
+                        <option value="🇺🇸">🇺🇸 สหรัฐอเมริกา (United States)</option>
+                        <option value="🇯🇵">🇯🇵 ญี่ปุ่น (Japan)</option>
+                        <option value="🇰🇷">🇰🇷 เกาหลีใต้ (South Korea)</option>
+                        <option value="🇬🇧">🇬🇧 สหราชอาณาจักร (United Kingdom)</option>
+                        <option value="🇨🇳">🇨🇳 จีน (China)</option>
+                    </select>
+                </div>
+
+                <div class="score-summary">
+                    <h4>📊 คะแนนของคุณ</h4>
+                    <p>ความรวย: <strong id="user-rich-score">0</strong> / 100</p>
+                    <p>ความหล่อสวย: <strong id="user-beauty-score">0</strong> / 100</p>
+                </div>
+
+                <button class="btn-back" onclick="showSection('leaderboard-section')">← กลับไปที่ Leaderboard</button>
+            </div>
+        </section>
+
+    </main>
 
     <script src="script.js"></script>
 </body>
